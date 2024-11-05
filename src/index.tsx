@@ -5,7 +5,7 @@ import clsx from 'clsx';
 import { Article } from './components/article/Article';
 import {
 	ArticleParamsForm,
-	mainStyleType,
+	MainStyleType,
 } from './components/article-params-form/ArticleParamsForm';
 
 import './styles/index.scss';
@@ -25,11 +25,11 @@ const App = () => {
 		'--bg-color': defaultArticleState.backgroundColor.value,
 	};
 
-	const mainStyle = useRef<mainStyleType>(defaultSyles);
+	const mainStyle = useRef<MainStyleType>(defaultSyles);
 	const [stylesToApply, setStylesToApply] =
-		useState<mainStyleType>(defaultSyles);
+		useState<MainStyleType>(defaultSyles);
 
-	const changeStyle = (value: Partial<mainStyleType>) => {
+	const changeStyle = (value: Partial<MainStyleType>) => {
 		mainStyle.current = { ...mainStyle.current, ...value };
 	};
 

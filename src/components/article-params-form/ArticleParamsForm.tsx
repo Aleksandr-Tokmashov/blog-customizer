@@ -19,8 +19,9 @@ import {
 	contentWidthArr,
 	defaultArticleState,
 } from 'src/constants/articleProps';
+import clsx from 'clsx';
 
-export type mainStyleType = {
+export type MainStyleType = {
 	'--font-family': string;
 	'--font-size': string;
 	'--font-color': string;
@@ -31,39 +32,45 @@ export type mainStyleType = {
 type StyleSelectorProps = {
 	options: OptionType[];
 	defaultOption: OptionType;
-	styleProperty: keyof mainStyleType;
+	styleProperty: keyof MainStyleType;
 	title: string;
 	isRadioGroup?: boolean;
-	onChangeStyle: (value: Partial<mainStyleType>) => void;
+	onChangeStyle: (value: Partial<MainStyleType>) => void;
 };
 
 type ArticleParamsFormProps = {
 	applyStyles: (event: React.FormEvent) => void;
 	resetStyles: (event: React.FormEvent) => void;
-	onChangeStyle: (value: Partial<mainStyleType>) => void;
+	onChangeStyle: (value: Partial<MainStyleType>) => void;
 };
 
 export const ArticleParamsForm = (props: ArticleParamsFormProps) => {
-	const asideRef = useRef<HTMLElement | null>(null);
-
-	const [isOpen, setOpenState] = useState<boolean>(false);
+	const asideRef = useRef<HTMLDivElement>(null);
+	const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
 
 	const openForm = () => {
-		if (asideRef.current) {
-			asideRef.current.classList.toggle(styles.container_open);
-			setOpenState(!isOpen);
-		}
+		setIsMenuOpen(!isMenuOpen);
 	};
+
+	useOutsideClickClose({
+		isMenuOpen,
+		rootRef: asideRef,
+		onChange: setIsMenuOpen,
+	});
 
 	return (
 		<>
-			<ArrowButton isOpen={isOpen} onClick={openForm} />
-			<aside className={styles.container} ref={asideRef}>
+			<ArrowButton isOpen={isMenuOpen} onClick={openForm} />
+			<aside
+				ref={asideRef}
+				className={clsx(styles.container, {
+					[styles.container_open]: isMenuOpen,
+				})}>
 				<form
 					className={styles.form}
 					onSubmit={props.applyStyles}
 					onReset={props.resetStyles}>
-					<Text size={31} weight={800} uppercase>
+					<Text size={31} weight={800} uppercase as={'h2'}>
 						Задайте параметры
 					</Text>
 					<StyleSelector
@@ -149,4 +156,31 @@ const StyleSelector = ({
 			title={title}
 		/>
 	);
+};
+
+type UseOutsideClickClose = {
+	isMenuOpen: boolean;
+	onChange: (newValue: boolean) => void;
+	rootRef: React.RefObject<HTMLDivElement>;
+};
+
+const useOutsideClickClose = ({
+	isMenuOpen,
+	rootRef,
+	onChange,
+}: UseOutsideClickClose) => {
+	useEffect(() => {
+		const handleClick = (event: MouseEvent) => {
+			const { target } = event;
+			if (target instanceof Node && !rootRef.current?.contains(target)) {
+				onChange(false);
+			}
+		};
+
+		window.addEventListener('mousedown', handleClick);
+
+		return () => {
+			window.removeEventListener('mousedown', handleClick);
+		};
+	}, [isMenuOpen]);
 };
